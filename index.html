@@ -117,12 +117,26 @@
   <div id="app" class="flex flex-col h-full relative bg-surface"></div>
   <script type="module" src="/src/main.js"></script>
   <script>
-    // PWA Service Worker 註冊（使用相對路徑）
+    // 移除 vite-plugin-pwa 注入的錯誤註冊（它會在頁面加載時執行）
+    // 然後使用正確的路徑重新註冊
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js', { scope: './' })
-          .then(reg => console.log('✅ SW registered:', reg.scope))
-          .catch(err => console.error('❌ SW registration failed:', err));
+      window.addEventListener('load', async () => {
+        try {
+          // 先取消註冊所有現有的 service workers
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+          }
+          
+          // 使用相對路徑重新註冊
+          const swPath = new URL('sw.js', window.location.href).pathname;
+          const reg = await navigator.serviceWorker.register(swPath, { 
+            scope: new URL('./', window.location.href).pathname 
+          });
+          console.log('✅ PWA Service Worker registered:', reg.scope);
+        } catch (err) {
+          console.error('❌ SW registration failed:', err);
+        }
       });
     }
   </script>

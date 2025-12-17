@@ -23,9 +23,8 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      // 禁用自動注入，手動在 index.html 處理
-      injectRegister: false,
-      injectManifest: false,
+      // 使用 inline 模式以支持相對路徑
+      injectRegister: 'inline',
       devOptions: {
         enabled: true,
         type: 'module'
