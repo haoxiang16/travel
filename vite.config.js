@@ -2,29 +2,19 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// 修復 PWA 路徑的插件（在 build 完成後執行）
-const fixPwaPathsPlugin = () => ({
-  name: 'fix-pwa-paths',
-  enforce: 'post',
-  transformIndexHtml: {
-    order: 'post',
-    handler(html) {
-      // 移除 vite-plugin-pwa 自動注入的絕對路徑 manifest 連結
-      return html.replace(/<link rel="manifest" href="\/manifest\.webmanifest">/g, '')
-    }
-  }
-})
+// 如果是在 GitHub Pages 上部署，使用倉庫名稱作為 base 路徑
+// 本地開發時 base 為 '/'
+const base = process.env.GITHUB_REPOSITORY 
+  ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/`
+  : '/'
 
 export default defineConfig({
-  // GitHub Pages 部署時使用倉庫名稱作為 base
-  // 本地開發時使用 '/'
-  base: process.env.GITHUB_ACTIONS ? '/travel/' : '/',
+  base: base,
   plugins: [
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      // 使用 inline 模式以支持相對路徑
-      injectRegister: 'inline',
+      strategies: 'generateSW',
       devOptions: {
         enabled: true,
         type: 'module'
@@ -37,27 +27,21 @@ export default defineConfig({
         theme_color: '#0d9488',
         background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait',
-        start_url: './',
-        scope: './',
+        orientation: 'portrait-primary',
+        start_url: base,
+        scope: base,
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: `${base}pwa-192x192.png`,
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any maskable'
           },
           {
-            src: 'pwa-512x512.png',
+            src: `${base}pwa-512x512.png`,
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
+            purpose: 'any maskable'
           }
         ]
       },
@@ -77,8 +61,7 @@ export default defineConfig({
           }
         ]
       }
-    }),
-    fixPwaPathsPlugin()
+    })
   ],
   server: {
     port: 3000
