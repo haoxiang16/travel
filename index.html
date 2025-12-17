@@ -7,7 +7,6 @@
   
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#0d9488">
-  <link rel="manifest" href="manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <!-- Tailwind CSS (CDN, for utility classes & layout) -->
@@ -117,6 +116,13 @@
   <div id="app" class="flex flex-col h-full relative bg-surface"></div>
   <script type="module" src="/src/main.js"></script>
   <script>
+    // 動態添加 manifest 連結（使用正確的相對路徑）
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = new URL('manifest.webmanifest', window.location.href).href;
+    document.head.appendChild(manifestLink);
+    console.log('📄 Manifest URL:', manifestLink.href);
+
     // 移除 vite-plugin-pwa 注入的錯誤註冊（它會在頁面加載時執行）
     // 然後使用正確的路徑重新註冊
     if ('serviceWorker' in navigator) {
@@ -134,6 +140,7 @@
             scope: new URL('./', window.location.href).pathname 
           });
           console.log('✅ PWA Service Worker registered:', reg.scope);
+          console.log('🔧 SW URL:', swPath);
         } catch (err) {
           console.error('❌ SW registration failed:', err);
         }
