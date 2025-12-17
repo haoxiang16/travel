@@ -32,4 +32,9 @@ dist-ssr
 # Build output
 build
 .cache
+dev-dist
+
+# Documentation (generated)
+*.md
+!README.md
 

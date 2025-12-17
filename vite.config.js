@@ -3,6 +3,9 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // GitHub Pages 部署時使用倉庫名稱作為 base
+  // 本地開發時使用 '/'
+  base: process.env.GITHUB_ACTIONS ? '/travel/' : '/',
   plugins: [
     vue(),
     VitePWA({
@@ -20,7 +23,7 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
+        start_url: './',
         icons: [
           {
             src: 'pwa-192x192.png',

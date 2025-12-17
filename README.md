@@ -1,213 +1,131 @@
-# 旅遊行程規劃 PWA
+Travel PWA
 
-使用 Vue 3 和 Google Maps API 打造的旅遊行程規劃應用，支援 PWA 功能。
+一個使用 Vue 3 + Vite + Firebase 構建的旅遊行程規劃 PWA 應用。
 
-## 功能特色
+![Vue.js](https://img.shields.io/badge/Vue.js-3.x-4FC08D?logo=vue.js)
+![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite)
+![Firebase](https://img.shields.io/badge/Firebase-12.x-FFCA28?logo=firebase)
+![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8)
 
-✨ **現代化 Vue 3 架構**
-- 使用 Composition API
-- Pinia 狀態管理
-- Vue Router 路由管理
+## ✨ 功能特色
 
-🗺️ **Google Maps 整合**
-- 互動式地圖顯示
-- 地點搜尋功能
-- 自動標記景點位置
-- 資訊視窗顯示
+- 📍 **Google Maps 整合** - 搜尋真實地點資料
+- 📱 **PWA 支援** - 可安裝到手機桌面，離線可用
+- ☁️ **Firebase 同步** - 跨裝置雲端同步行程資料
+- 🔐 **多種登入方式** - Google 登入或訪客模式
+- 📤 **匯入/匯出** - JSON 格式備份行程
 
-📱 **PWA 支援**
-- 可安裝到桌面/主畫面
-- 離線快取支援
-- Service Worker 自動更新
+## 🚀 快速開始
 
-💾 **本地儲存**
-- 使用 LocalStorage 儲存行程資料
-- 無需後端伺服器
-- 資料保存在本地裝置
-
-🎨 **美觀的使用者介面**
-- 響應式設計
-- 行動裝置優化
-- 現代化 UI/UX
-
-## 安裝步驟
-
-### 1. 安裝相依套件
+### 安裝依賴
 
 ```bash
 npm install
 ```
 
-### 2. 設定 Google Maps API Key
-
-1. 前往 [Google Cloud Console](https://console.cloud.google.com/)
-2. 建立新專案或選擇現有專案
-3. 啟用以下 API：
-   - Maps JavaScript API
-   - Places API
-4. 建立 API 金鑰
-5. 在專案根目錄建立 `.env` 檔案：
-
-```bash
-VITE_GOOGLE_MAPS_API_KEY=你的_API_金鑰
-```
-
-### 3. 啟動開發伺服器
+### 開發模式
 
 ```bash
 npm run dev
 ```
 
-應用程式將在 `http://localhost:3000` 啟動
+訪問 http://localhost:3000
 
-### 4. 建置生產版本
+### 建置生產版本
 
 ```bash
 npm run build
 ```
 
-建置完成的檔案將在 `dist` 目錄中
-
-### 5. 預覽生產版本
+### 預覽生產版本
 
 ```bash
 npm run preview
 ```
 
-## 使用說明
+## ⚙️ 環境設定
 
-### 建立新行程
+### Google Maps API Key
 
-1. 點擊「新增行程」
-2. 輸入行程名稱、日期範圍和描述
-3. 點擊「建立行程」
+1. 前往 [Google Cloud Console](https://console.cloud.google.com/)
+2. 建立專案並啟用以下 API：
+   - Maps JavaScript API
+   - Places API
+3. 建立 API Key
+4. 在應用設定頁面輸入 API Key
 
-### 新增景點
+### Firebase 設定
 
-1. 進入行程詳細頁面
-2. 使用地圖上方的搜尋框搜尋地點
-3. 選擇地點後會自動填入名稱和地址
-4. 可以新增備註說明
-5. 點擊「新增景點」
+Firebase 設定已內建於專案中。如需使用自己的 Firebase 專案：
 
-### 檢視地圖
+1. 前往 [Firebase Console](https://console.firebase.google.com/)
+2. 建立新專案
+3. 啟用 Authentication（匿名登入 + Google 登入）
+4. 建立 Firestore Database
+5. 更新 `src/firebase.js` 中的設定
 
-- 地圖會自動顯示所有景點的標記
-- 點擊標記可以檢視景點資訊
-- 地圖會自動調整視角以顯示所有景點
-
-### 管理行程
-
-- 在行程列表可以檢視所有行程
-- 點擊行程卡片進入詳細頁面
-- 使用「編輯」按鈕修改行程資訊
-- 使用「刪除」按鈕移除行程
-
-## 技術架構
-
-### 核心技術
-
-- **Vue 3** - 前端框架
-- **Vite** - 建置工具
-- **Pinia** - 狀態管理
-- **Vue Router** - 路由管理
-- **Google Maps API** - 地圖服務
-- **Vite PWA Plugin** - PWA 支援
-
-### 專案結構
+## 📁 專案結構
 
 ```
-├── public/              # 靜態資源
-├── src/
-│   ├── components/      # Vue 組件
-│   │   └── GoogleMap.vue
-│   ├── stores/          # Pinia stores
-│   │   ├── mapStore.js
-│   │   └── tripStore.js
-│   ├── views/           # 頁面組件
-│   │   ├── TripList.vue
-│   │   ├── TripNew.vue
-│   │   └── TripDetail.vue
-│   ├── router/          # 路由配置
-│   │   └── index.js
-│   ├── App.vue          # 根組件
-│   ├── main.js          # 應用程式入口
-│   └── style.css        # 全域樣式
-├── index.html
-├── vite.config.js       # Vite 配置
-└── package.json
+src/
+├── App.vue                    # 主應用組件
+├── main.js                    # 應用入口
+├── firebase.js                # Firebase 設定與函數
+├── style.css                  # 全域樣式
+└── components/
+    ├── AppHeader.vue          # 頂部導航欄
+    ├── MapView.vue            # 地圖視圖
+    ├── ListView.vue           # 搜尋結果列表
+    ├── ItineraryView.vue      # 行程列表
+    ├── SettingsView.vue       # 設定頁面
+    ├── BottomNav.vue          # 底部導航
+    ├── LoginModal.vue         # 登入彈窗
+    ├── ManualInputModal.vue   # 新增行程彈窗
+    ├── DayTitleModal.vue      # 日期主題編輯
+    ├── PlaceDetailModal.vue   # 地點詳情
+    ├── UserMenu.vue           # 用戶選單
+    └── ToastNotification.vue  # 消息提示
 ```
 
-## PWA 功能
+## 🔧 GitHub Actions 自動部署
 
-### 安裝應用程式
+專案已配置 GitHub Actions，推送到 `main` 分支時會自動部署到 GitHub Pages。
 
-在支援的瀏覽器中，可以將此應用程式安裝到：
-- 桌面裝置（Windows、macOS、Linux）
-- 行動裝置（iOS、Android）
+### 設定步驟
 
-### 離線支援
+1. **啟用 GitHub Pages**
+   - 前往 Repository → Settings → Pages
+   - Source 選擇 "GitHub Actions"
 
-應用程式會快取必要的資源，即使在離線狀態下也能：
-- 瀏覽已儲存的行程
-- 檢視景點列表
-- 使用基本功能
+2. **推送程式碼**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
 
-註：地圖功能需要網路連線
+3. **查看部署狀態**
+   - 前往 Repository → Actions
+   - 等待 workflow 完成
 
-## 瀏覽器支援
+4. **訪問應用**
+   - 部署完成後訪問：`https://<username>.github.io/travel/`
 
-- Chrome / Edge 90+
-- Firefox 88+
-- Safari 14+
-- iOS Safari 14+
-- Chrome for Android
+## 📝 注意事項
 
-## 開發說明
+- 確保 `vite.config.js` 中的 `base` 設定與您的 repository 名稱一致
+- 如果 repository 名稱不是 `travel`，請更新 base 設定
 
-### 新增功能
+## 🛠️ 技術棧
 
-1. 在 `src/components/` 新增組件
-2. 在 `src/views/` 新增頁面
-3. 在 `src/router/index.js` 新增路由
-4. 在 `src/stores/` 新增狀態管理
+- **前端框架**: Vue 3 (Composition API)
+- **建置工具**: Vite 5
+- **樣式**: Tailwind CSS (CDN)
+- **圖標**: Font Awesome 6
+- **後端服務**: Firebase (Auth + Firestore)
+- **地圖服務**: Google Maps JavaScript API + Places API
+- **PWA**: vite-plugin-pwa + Workbox
 
-### 樣式自訂
-
-全域樣式變數定義在 `src/style.css` 中：
-
-```css
-:root {
-  --primary-color: #4285f4;
-  --secondary-color: #34a853;
-  --danger-color: #ea4335;
-  --warning-color: #fbbc04;
-  /* ... 更多變數 */
-}
-```
-
-## 注意事項
-
-1. **API 金鑰安全**：不要將 API 金鑰提交到公開的版本控制系統
-2. **API 配額**：注意 Google Maps API 的使用配額和計費
-3. **資料備份**：本地儲存的資料在清除瀏覽器快取時會遺失，建議定期匯出備份
-4. **HTTPS 需求**：PWA 功能需要在 HTTPS 環境下運作（開發環境的 localhost 除外）
-
-## 未來改進
-
-- [ ] 匯出/匯入行程資料功能
-- [ ] 行程分享功能
-- [ ] 景點排序和拖曳功能
-- [ ] 路線規劃和導航
-- [ ] 照片上傳功能
-- [ ] 多語言支援
-- [ ] 雲端同步功能
-
-## 授權
+## 📄 License
 
 MIT License
-
-## 作者
-
-建立於 2025
-
