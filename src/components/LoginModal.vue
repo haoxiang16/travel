@@ -11,7 +11,7 @@
             <i class="fa-solid fa-suitcase-rolling text-3xl text-white -rotate-6"></i>
           </div>
           <h2 class="text-2xl font-serif font-bold text-dark mb-2">歡迎使用</h2>
-          <p class="text-sm text-gray-500">台灣輕旅行規劃 App</p>
+          <p class="text-sm text-gray-500">旅行規劃 </p>
         </div>
 
         <!-- Loading State -->
