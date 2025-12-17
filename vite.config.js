@@ -16,24 +16,33 @@ export default defineConfig({
       },
       includeAssets: ['robots.txt'],
       manifest: {
-        name: '旅遊行程規劃',
-        short_name: '旅遊規劃',
+        name: '台灣輕旅行',
+        short_name: '輕旅行',
         description: '使用Google Map的旅遊行程規劃應用',
-        theme_color: '#4285f4',
+        theme_color: '#0d9488',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         start_url: './',
+        scope: './',
         icons: [
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       },
