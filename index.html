@@ -116,6 +116,45 @@
 <body class="h-screen w-screen overflow-hidden text-dark">
   <div id="app" class="flex flex-col h-full relative bg-surface"></div>
   <script type="module" src="/src/main.js"></script>
+  <script>
+    // 強制清除所有舊的 PWA 緩存和註冊
+    (async function() {
+      console.log('🧹 Starting PWA cache cleanup...');
+      
+      // 1. 移除所有 manifest 連結
+      document.querySelectorAll('link[rel="manifest"]').forEach(link => {
+        console.log('🗑️ Removing old manifest:', link.href);
+        link.remove();
+      });
+      
+      // 2. 清除所有 Service Worker
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          console.log('🗑️ Unregistering SW:', reg.scope);
+          await reg.unregister();
+        }
+      }
+      
+      // 3. 清除所有緩存
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+          console.log('🗑️ Deleting cache:', cacheName);
+          await caches.delete(cacheName);
+        }
+      }
+      
+      console.log('✅ Cache cleanup complete!');
+      console.log('🔄 Page will reload to apply changes...');
+      
+      // 4. 強制刷新頁面（僅在清理後第一次）
+      if (!sessionStorage.getItem('pwa-cleaned')) {
+        sessionStorage.setItem('pwa-cleaned', 'true');
+        setTimeout(() => window.location.reload(true), 500);
+      }
+    })();
+  </script>
 </body>
 </html>
 
