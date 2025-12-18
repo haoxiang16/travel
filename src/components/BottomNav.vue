@@ -1,8 +1,14 @@
 <template>
-  <nav class="fixed bottom-6 inset-x-6 h-20 bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex justify-around items-center z-30 border border-white/50 pb-safe">
-    <button @click="$emit('switch', 'map')" class="relative w-16 h-full flex flex-col items-center justify-center transition group">
+  <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-md lg:max-w-lg h-20 bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex justify-around items-center z-30 border border-white/50 pb-safe transition-all duration-300">
+    <button @click="$emit('switch', 'map')" class="relative w-16 h-full flex flex-col items-center justify-center transition group lg:hidden">
       <div :class="currentView === 'map' ? 'bg-primary/10 text-primary scale-110' : 'text-gray-300 hover:text-gray-500'" class="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300">
         <i class="fa-solid fa-map text-lg"></i>
+      </div>
+    </button>
+    
+    <button v-if="currentView === 'map'" @click="$emit('switch', 'itinerary')" class="hidden lg:flex relative w-16 h-full flex-col items-center justify-center transition group">
+      <div class="text-gray-300 hover:text-gray-500 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300">
+        <i class="fa-solid fa-chevron-left text-lg"></i>
       </div>
     </button>
 

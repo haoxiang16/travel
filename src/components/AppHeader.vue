@@ -1,6 +1,6 @@
 <template>
   <header class="pt-safe px-4 pb-2 bg-white/80 backdrop-blur-md sticky top-0 z-20 transition-all duration-300 shadow-sm border-b border-gray-100/50">
-    <div class="h-16 flex items-center gap-3">
+    <div class="max-w-[1440px] mx-auto h-16 flex items-center gap-3">
       <!-- Cloud Status Indicator -->
       <div class="flex items-center gap-1.5 px-2">
         <div class="w-2 h-2 rounded-full transition-colors duration-500" 
@@ -52,7 +52,6 @@
 
       <button @click="$emit('open-settings')" class="w-11 h-11 rounded-2xl bg-white flex items-center justify-center text-gray-500 hover:text-dark hover:bg-gray-50 transition shadow-sm border border-gray-100 shrink-0 relative">
         <i class="fa-solid fa-sliders"></i>
-        <span v-if="!apiKey" class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
       </button>
     </div>
   </header>
@@ -62,8 +61,7 @@
 defineProps({
   syncStatus: { type: String, default: 'offline' },
   searchQuery: { type: String, default: '' },
-  user: { type: Object, default: null },
-  apiKey: { type: String, default: '' }
+  user: { type: Object, default: null }
 })
 
 defineEmits(['update:searchQuery', 'search', 'toggle-user-menu', 'show-login', 'open-settings'])

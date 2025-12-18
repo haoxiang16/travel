@@ -77,7 +77,7 @@
               </div>
             </div>
 
-            <div class="flex gap-4 group" @click="$emit('select-place', place)">
+            <div class="flex gap-4 group w-full" @click="$emit('select-place', place)">
               <!-- Time Column -->
               <div class="flex flex-col items-end pt-3 w-12 shrink-0">
                 <span v-if="place.time" class="text-xs font-bold text-gray-700">{{ place.time }}</span>
@@ -90,8 +90,8 @@
               </div>
 
               <!-- Card Content -->
-              <div class="flex-grow pb-2">
-                <div class="relative bg-white rounded-2xl p-4 shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all active:scale-[0.99] flex gap-3 overflow-hidden group/card min-h-[90px]">
+              <div class="flex-grow min-w-0 pb-2">
+                <div class="w-full relative bg-white rounded-2xl p-4 shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all active:scale-[0.99] flex gap-3 overflow-hidden group/card min-h-[90px]">
                   <div class="absolute top-0 left-0 bottom-0 w-1" :class="getTypeColor(place.type)"></div>
                   
                   <div class="w-14 h-14 rounded-xl overflow-hidden shrink-0 flex items-center justify-center bg-gray-50 text-gray-400">
@@ -100,9 +100,9 @@
                   </div>
                   
                   <div class="flex-grow min-w-0 flex flex-col justify-between py-0.5">
-                    <div class="flex justify-between items-start">
-                      <h4 class="font-bold text-dark text-sm truncate pr-2 leading-tight">{{ place.name }}</h4>
-                      <div class="flex gap-1 shrink-0">
+                    <div class="flex justify-between items-start min-w-0">
+                      <h4 class="font-bold text-dark text-sm truncate pr-2 leading-tight flex-grow">{{ place.name }}</h4>
+                      <div class="flex gap-1 shrink-0 ml-auto">
                         <button @click.stop="$emit('edit', place)" class="w-7 h-7 rounded-full bg-gray-50 text-gray-400 hover:bg-primary/10 hover:text-primary transition flex items-center justify-center">
                           <i class="fa-solid fa-pen text-xs"></i>
                         </button>
@@ -112,17 +112,17 @@
                       </div>
                     </div>
                     
-                    <div class="flex justify-between items-end mt-auto">
-                      <div class="flex flex-col gap-1 max-w-[65%]">
+                    <div class="flex justify-between items-end mt-auto min-w-0">
+                      <div class="flex flex-col gap-1 max-w-[70%] min-w-0">
                         <span class="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded w-fit leading-none">{{ place.typeLabel || '自訂' }}</span>
                         <span v-if="place.address" 
                               @click.stop="$emit('navigate', place)"
-                              class="text-[10px] text-gray-400 flex items-center gap-1 hover:text-primary cursor-pointer transition line-clamp-1">
+                              class="text-[10px] text-gray-400 flex items-center gap-1 hover:text-primary cursor-pointer transition min-w-0 w-full">
                           <i class="fa-solid fa-location-dot text-[8px] shrink-0"></i>
                           <span class="truncate">{{ place.address }}</span>
                         </span>
                       </div>
-                      <span v-if="place.cost" class="text-xs font-bold text-dark shrink-0">
+                      <span v-if="place.cost" class="text-xs font-bold text-dark shrink-0 ml-2">
                         NT$ {{ Number(place.cost).toLocaleString() }}
                       </span>
                     </div>

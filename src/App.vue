@@ -5,7 +5,6 @@
       :sync-status="syncStatus"
       v-model:search-query="searchQuery"
       :user="user"
-      :api-key="apiKey"
       @search="searchPlaces"
       @toggle-user-menu="showUserMenu = !showUserMenu"
       @show-login="showLoginModal = true"
@@ -13,67 +12,103 @@
     />
 
     <!-- Main Content Area -->
-    <main class="flex-grow relative overflow-hidden">
-      <!-- VIEW: MAP -->
-      <transition name="fade">
+    <main class="flex-grow relative overflow-hidden flex flex-col lg:flex-row">
+      <!-- Desktop Sidebar (Itinerary/List/Settings) -->
+      <aside v-if="currentView !== 'map'" 
+             class="hidden lg:flex flex-col w-[450px] border-r border-gray-100 bg-surface z-10 shadow-xl overflow-hidden shrink-0">
+        <div class="h-full relative overflow-y-auto custom-scrollbar">
+          <!-- View: List in Sidebar -->
+          <ListView 
+            v-if="currentView === 'list'"
+            :places="places"
+            :is-searching="isSearching"
+            :is-in-itinerary="isInItinerary"
+            @select-place="selectPlace"
+            @view-on-map="viewOnMap"
+          />
+          <!-- View: Itinerary in Sidebar -->
+          <ItineraryView 
+            v-if="currentView === 'itinerary'"
+            :itinerary="itinerary"
+            :day-titles="dayTitles"
+            @add="openManualInput"
+            @clear="clearItinerary"
+            @edit="editItem"
+            @remove="removeFromItinerary"
+            @select-place="selectPlace"
+            @edit-day-title="editDayTitle"
+            @navigate="navigateTo"
+          />
+          <!-- View: Settings in Sidebar -->
+          <SettingsView 
+            v-if="currentView === 'settings'"
+            :user="user"
+            :sync-status="syncStatus"
+            :is-map-ready="isMapReady"
+            @sign-out="handleSignOut"
+            @show-login="showLoginModal = true"
+            @export="exportItinerary"
+            @import="triggerImport"
+            @reload-api="loadGoogleMapsScript"
+          />
+        </div>
+      </aside>
+
+      <!-- Map View (Always visible on Desktop, Swappable on Mobile) -->
+      <section class="flex-grow relative h-full transition-all duration-500 ease-in-out">
         <MapView 
-          v-show="currentView === 'map'"
+          v-show="currentView === 'map' || (isLargeScreen && currentView !== 'settings')"
           :is-map-ready="isMapReady"
           @open-settings="currentView = 'settings'"
           @get-location="getUserLocation"
         />
-      </transition>
+        
+        <!-- Mobile Swappable Views (Hidden on Desktop split screen) -->
+        <div class="lg:hidden h-full">
+          <!-- VIEW: LIST -->
+          <transition name="fade">
+            <ListView 
+              v-show="currentView === 'list'"
+              :places="places"
+              :is-searching="isSearching"
+              :is-in-itinerary="isInItinerary"
+              @select-place="selectPlace"
+              @view-on-map="viewOnMap"
+            />
+          </transition>
 
-      <!-- VIEW: LIST -->
-      <transition name="fade">
-        <ListView 
-          v-show="currentView === 'list'"
-          :places="places"
-          :is-searching="isSearching"
-          :is-in-itinerary="isInItinerary"
-          @select-place="selectPlace"
-          @view-on-map="viewOnMap"
-        />
-      </transition>
+          <!-- VIEW: ITINERARY -->
+          <transition name="fade">
+            <ItineraryView 
+              v-show="currentView === 'itinerary'"
+              :itinerary="itinerary"
+              :day-titles="dayTitles"
+              @add="openManualInput"
+              @clear="clearItinerary"
+              @edit="editItem"
+              @remove="removeFromItinerary"
+              @select-place="selectPlace"
+              @edit-day-title="editDayTitle"
+              @navigate="navigateTo"
+            />
+          </transition>
 
-      <!-- VIEW: ITINERARY -->
-      <transition name="fade">
-        <ItineraryView 
-          v-show="currentView === 'itinerary'"
-          :itinerary="itinerary"
-          :day-titles="dayTitles"
-          @add="openManualInput"
-          @clear="clearItinerary"
-          @edit="editItem"
-          @remove="removeFromItinerary"
-          @select-place="selectPlace"
-          @edit-day-title="editDayTitle"
-          @navigate="navigateTo"
-        />
-      </transition>
-
-      <!-- VIEW: SETTINGS -->
-      <transition name="fade">
-        <SettingsView 
-          v-show="currentView === 'settings'"
-          :user="user"
-          :sync-status="syncStatus"
-          v-model:api-key="apiKey"
-          :is-map-ready="isMapReady"
-          :itinerary-count="itinerary.length"
-          @sign-out="handleSignOut"
-          @force-logout="forceLogout"
-          @show-login="showLoginModal = true"
-          @export="exportItinerary"
-          @import="triggerImport"
-          @reload-api="loadGoogleMapsScript"
-          @test-api="testApiConnection"
-          @save-api="saveApiKey"
-          @test-write="testFirebaseWrite"
-          @test-read="testFirebaseRead"
-          @open-console="openFirebaseConsole"
-        />
-      </transition>
+          <!-- VIEW: SETTINGS -->
+          <transition name="fade">
+            <SettingsView 
+              v-show="currentView === 'settings'"
+              :user="user"
+              :sync-status="syncStatus"
+              :is-map-ready="isMapReady"
+              @sign-out="handleSignOut"
+              @show-login="showLoginModal = true"
+              @export="exportItinerary"
+              @import="triggerImport"
+              @reload-api="loadGoogleMapsScript"
+            />
+          </transition>
+      </div>
+      </section>
 
       <!-- Manual Input Modal -->
       <transition name="fade">
@@ -162,7 +197,8 @@ import ToastNotification from './components/ToastNotification.vue'
 
 // ==================== State ====================
 const currentView = ref('itinerary')
-const apiKey = ref(localStorage.getItem('google_maps_key') || '')
+const isLargeScreen = ref(window.innerWidth >= 1024)
+const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
 const map = ref(null)
 const googleMarkers = ref([])
 const isMapReady = ref(false)
@@ -213,6 +249,13 @@ onMounted(async () => {
   if (apiKey.value) {
     loadGoogleMapsScript()
   }
+  
+  window.addEventListener('resize', () => {
+    isLargeScreen.value = window.innerWidth >= 1024
+    if (isLargeScreen.value && currentView.value === 'map') {
+      currentView.value = 'itinerary'
+    }
+  })
 })
 
 // ==================== Firebase Methods ====================
@@ -294,25 +337,6 @@ const handleSignOut = async () => {
   } catch (error) {
     console.error('❌ 登出失敗:', error)
     showToast('登出失敗: ' + (error.message || '請重試'))
-  }
-}
-
-const forceLogout = async () => {
-  console.log('⚠️ 強制登出被觸發')
-  try {
-    user.value = null
-    showUserMenu.value = false
-    syncStatus.value = 'offline'
-    if (unsubscribeListener.value) {
-      unsubscribeListener.value()
-      unsubscribeListener.value = null
-    }
-    try { await signOut() } catch (e) { console.warn('Firebase 登出失敗（忽略）:', e) }
-    showToast('已強制登出')
-    setTimeout(() => { window.location.reload() }, 1000)
-  } catch (error) {
-    console.error('❌ 強制登出也失敗:', error)
-    window.location.reload()
   }
 }
 
@@ -539,98 +563,18 @@ const showToast = (msg) => {
   setTimeout(() => { toast.value.show = false }, 2000)
 }
 
-// ==================== Firebase Test Methods ====================
-const testFirebaseWrite = async () => {
-  if (!user.value) { showToast('請先登入'); return }
-  try {
-    syncStatus.value = 'syncing'
-    await saveItineraryData(user.value.uid, itinerary.value, dayTitles.value)
-    syncStatus.value = 'synced'
-    showToast('✅ 寫入成功！請查看 Firebase Console')
-  } catch (error) {
-    console.error('❌ 寫入失敗:', error)
-    showToast('❌ 寫入失敗: ' + error.message)
-    syncStatus.value = 'offline'
-  }
-}
-
-const testFirebaseRead = async () => {
-  if (!user.value) { showToast('請先登入'); return }
-  try {
-    syncStatus.value = 'syncing'
-    const data = await loadItineraryData(user.value.uid)
-    if (data) {
-      showToast(`✅ 讀取成功！共 ${data.itinerary.length} 個項目`)
-      itinerary.value = data.itinerary
-      dayTitles.value = data.dayTitles
-      saveItinerary()
-    } else {
-      showToast('ℹ️ Firebase 中沒有資料')
-    }
-    syncStatus.value = 'synced'
-  } catch (error) {
-    console.error('❌ 讀取失敗:', error)
-    showToast('❌ 讀取失敗: ' + error.message)
-    syncStatus.value = 'offline'
-  }
-}
-
-const openFirebaseConsole = () => {
-  window.open('https://console.firebase.google.com/project/tarvelapp-e68a6/firestore/databases/-default-/data/~2Fusers', '_blank')
-}
-
 // ==================== API Methods ====================
-const testApiConnection = () => {
-  if (!apiKey.value.trim()) { alert('請先輸入 API Key'); return }
-  const oldKey = localStorage.getItem('google_maps_key')
-  localStorage.setItem('google_maps_key', apiKey.value.trim())
-  showToast('測試中...')
-  
-  if (window.google && window.google.maps) {
-    testSearch()
-  } else {
-    loadGoogleMapsScript()
-    setTimeout(() => {
-      if (isMapReady.value) { testSearch() }
-      else {
-        alert('❌ API 載入失敗\n\n請檢查 API Key')
-        if (oldKey) localStorage.setItem('google_maps_key', oldKey)
-      }
-    }, 3000)
-  }
-}
-
-const testSearch = () => {
-  if (!window.google || !window.google.maps) { alert('Google Maps API 未載入'); return }
-  const service = new google.maps.places.PlacesService(document.createElement('div'))
-  service.textSearch({ query: '台北 101' }, (results, status) => {
-    if (status === google.maps.places.PlacesServiceStatus.OK && results?.length > 0) {
-      alert(`✅ 測試成功！找到 ${results.length} 個結果`)
-    } else if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
-      alert('❌ 測試失敗：權限被拒絕\n\n請確認 Places API 已啟用')
-    } else {
-      alert(`❌ 測試失敗：${status}`)
-    }
-  })
-}
-
-const saveApiKey = () => {
-  if (apiKey.value.trim()) {
-    localStorage.setItem('google_maps_key', apiKey.value.trim())
-    window.location.reload()
-  } else {
-    alert("請輸入有效的 API Key")
-  }
-}
-
-// ==================== Map Methods ====================
 const loadGoogleMapsScript = () => {
   if (window.google && window.google.maps) {
     if (!map.value) { isMapReady.value = true; initMap() }
     return
   }
+  if (!apiKey) {
+    console.error('❌ Google Maps API Key is missing in .env')
+    return
+  }
   const script = document.createElement('script')
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey.value}&callback=initMapGlobal&libraries=places`
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMapGlobal&libraries=places`
   script.async = true
   script.defer = true
   window.initMapGlobal = () => { isMapReady.value = true; initMap() }
@@ -652,7 +596,7 @@ const initMap = () => {
 }
 
 const searchPlaces = () => {
-  if (!apiKey.value) { alert("請先至設定輸入 Google Maps API Key"); currentView.value = 'settings'; return }
+  if (!apiKey) { alert("系統未設定 Google Maps API Key"); return }
   if (!window.google || !window.google.maps) { alert("Google Maps API 尚未載入"); loadGoogleMapsScript(); return }
   if (!searchQuery.value.trim()) return
   
