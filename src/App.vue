@@ -22,8 +22,11 @@
             :places="places"
             :is-searching="isSearching"
             :is-in-itinerary="isInItinerary"
+            :user-location="userLocation"
+            :has-next-page="!!(pagination && pagination.hasNextPage)"
             @select-place="selectPlace"
             @view-on-map="viewOnMap"
+            @load-more="loadMorePlaces"
           />
           <!-- View: Itinerary in Sidebar -->
           <ItineraryView 
@@ -65,14 +68,17 @@
         <div class="lg:hidden h-full">
           <!-- VIEW: LIST -->
           <transition name="fade">
-            <ListView 
-              v-show="currentView === 'list'"
-              :places="places"
-              :is-searching="isSearching"
-              :is-in-itinerary="isInItinerary"
-              @select-place="selectPlace"
-              @view-on-map="viewOnMap"
-            />
+        <ListView 
+          v-show="currentView === 'list'"
+          :places="places"
+          :is-searching="isSearching"
+          :is-in-itinerary="isInItinerary"
+          :user-location="userLocation"
+          :has-next-page="!!(pagination && pagination.hasNextPage)"
+          @select-place="selectPlace"
+          @view-on-map="viewOnMap"
+          @load-more="loadMorePlaces"
+        />
           </transition>
 
           <!-- VIEW: ITINERARY -->
@@ -205,6 +211,7 @@ const itinerary = ref([])
 const dayTitles = ref({})
 const searchQuery = ref('')
 const user = ref(null)
+const userLocation = ref(null)
 const unsubscribeListener = ref(null)
 const showLoginModal = ref(false)
 const showUserMenu = ref(false)
@@ -216,6 +223,7 @@ const currentEditingDate = ref('')
 const fileInput = ref(null)
 const toast = ref({ show: false, message: '' })
 const places = ref([])
+const pagination = ref(null)
 
 const detailDateTime = ref({
   date: new Date().toISOString().split('T')[0],
@@ -242,6 +250,7 @@ const types = [
 // ==================== Lifecycle ====================
 onMounted(async () => {
   initFirebase()
+  getUserLocation()
   if (apiKey) {
     loadGoogleMapsScript()
   }
@@ -583,12 +592,16 @@ const searchPlaces = () => {
   
   isSearching.value = true
   currentView.value = 'list'
+  places.value = []
+  pagination.value = null
   
   const service = new google.maps.places.PlacesService(document.createElement('div'))
-  service.textSearch({ query: searchQuery.value }, (results, status) => {
+  
+  const handleResults = (results, status, pag) => {
     isSearching.value = false
     if (status === google.maps.places.PlacesServiceStatus.OK && results?.length > 0) {
-      places.value = results.map(place => ({
+      pagination.value = pag
+      const newPlaces = results.map(place => ({
         id: place.place_id,
         name: place.name,
         lat: place.geometry.location.lat(),
@@ -598,13 +611,26 @@ const searchPlaces = () => {
         image: place.photos?.[0]?.getUrl({maxWidth: 600}) || 'https://placehold.co/600x400?text=No+Image',
         isManual: false, type: 'spot', cost: 0
       }))
-      showToast(`找到 ${places.value.length} 個結果`)
+      
+      // Append results instead of replacing
+      places.value = [...places.value, ...newPlaces]
+      
+      showToast(`目前共 ${places.value.length} 個結果`)
       if(isMapReady.value && map.value) { nextTick(() => updateMapMarkers()) }
-    } else {
+    } else if (status !== google.maps.places.PlacesServiceStatus.OK && places.value.length === 0) {
       places.value = []
       showToast(status === 'REQUEST_DENIED' ? '❌ API 權限被拒絕' : '找不到相關結果')
     }
-  })
+  }
+
+  service.textSearch({ query: searchQuery.value }, handleResults)
+}
+
+const loadMorePlaces = () => {
+  if (pagination.value && pagination.value.hasNextPage) {
+    isSearching.value = true
+    pagination.value.nextPage()
+  }
 }
 
 const updateMapMarkers = () => {
@@ -650,9 +676,12 @@ const getUserLocation = () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
       const pos = { lat: position.coords.latitude, lng: position.coords.longitude }
-      map.value.setCenter(pos)
-      map.value.setZoom(15)
-      new google.maps.Marker({ position: pos, map: map.value, title: '目前位置' })
+      userLocation.value = pos
+      if (map.value) {
+        map.value.setCenter(pos)
+        map.value.setZoom(15)
+        new google.maps.Marker({ position: pos, map: map.value, title: '目前位置' })
+      }
     })
   }
 }

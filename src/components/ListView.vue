@@ -15,56 +15,101 @@
 
       <!-- Loading -->
       <div v-if="isSearching" class="flex flex-col items-center justify-center py-32">
-        <div class="relative">
-          <div class="w-16 h-16 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
-          <i class="fa-solid fa-plane absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse"></i>
+        <div class="relative w-16 h-16 flex items-center justify-center">
+          <div class="absolute inset-0 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
+          <i class="fa-solid fa-plane text-primary animate-pulse text-xl"></i>
         </div>
         <p class="text-gray-400 text-sm font-bold tracking-widest mt-6 uppercase">Searching...</p>
       </div>
 
       <!-- Results -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div v-for="(place, index) in places" :key="place.id" 
-             class="group bg-white rounded-[2.5rem] p-4 shadow-[0_10px_40px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.1)] transition-all duration-500 border border-gray-50 relative overflow-hidden flex flex-col h-full">
-          
-          <!-- 編號標籤 -->
-          <div class="absolute top-6 left-6 w-10 h-10 bg-dark/80 backdrop-blur-md text-white rounded-2xl flex items-center justify-center font-black text-sm shadow-xl z-20 transition-transform group-hover:scale-110">
-            {{ index + 1 }}
+      <div v-else class="space-y-6">
+        <!-- Filter/Sort Bar -->
+        <div v-if="places.length > 0" class="flex items-center justify-between mb-2">
+          <div class="text-xs font-black text-gray-400 uppercase tracking-widest">
+            找到 {{ places.length }} 個結果
           </div>
+          <div class="flex items-center gap-2">
+            <button 
+              @click="sortBy = sortBy === 'rating' ? 'default' : 'rating'"
+              :class="sortBy === 'rating' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white text-gray-500 border border-gray-100 shadow-sm'"
+              class="px-4 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all duration-300 flex items-center gap-2 active:scale-95"
+            >
+              <i class="fa-solid fa-star text-[8px]"></i>
+              評分最高
+            </button>
+            <button 
+              v-if="userLocation"
+              @click="sortBy = sortBy === 'distance' ? 'default' : 'distance'"
+              :class="sortBy === 'distance' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white text-gray-500 border border-gray-100 shadow-sm'"
+              class="px-4 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all duration-300 flex items-center gap-2 active:scale-95"
+            >
+              <i class="fa-solid fa-location-arrow text-[8px]"></i>
+              距離最近
+            </button>
+          </div>
+        </div>
 
-          <div class="relative h-64 rounded-[2rem] overflow-hidden mb-5 bg-gray-100 shrink-0 group/img cursor-pointer" @click="$emit('select-place', place)">
-            <img :src="place.image" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000 ease-out" alt="place.name" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-for="(place, index) in sortedPlaces" :key="place.id" 
+               class="group bg-white rounded-[2.5rem] p-4 shadow-[0_10px_40px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.1)] transition-all duration-500 border border-gray-50 relative overflow-hidden flex flex-col h-full">
             
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
-            
-            <div v-if="place.rating" class="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-black flex items-center gap-1.5 shadow-xl text-dark">
-              <i class="fa-solid fa-star text-accent"></i> {{ place.rating }}
+            <!-- 編號標籤 -->
+            <div class="absolute top-6 left-6 w-10 h-10 bg-dark/80 backdrop-blur-md text-white rounded-2xl flex items-center justify-center font-black text-sm shadow-xl z-20 transition-transform group-hover:scale-110">
+              {{ index + 1 }}
             </div>
 
-            <div class="absolute bottom-6 left-6 right-6 text-white pr-4 transform group-hover:translate-y-[-4px] transition-transform duration-500">
-              <h3 class="text-xl font-black tracking-tight leading-tight mb-1">{{ place.name }}</h3>
-              <div class="flex items-center text-white/80 text-[10px] font-bold tracking-wide uppercase">
-                <i class="fa-solid fa-location-dot mr-1.5"></i> 
-                <span class="truncate">{{ place.address?.split(',')[0] || '未知地點' }}</span>
+            <div class="relative h-64 rounded-[2rem] overflow-hidden mb-5 bg-gray-100 shrink-0 group/img cursor-pointer" @click="$emit('select-place', place)">
+              <img :src="place.image" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000 ease-out" alt="place.name" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+              
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
+              
+              <div v-if="place.rating" class="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-black flex items-center gap-1.5 shadow-xl text-dark">
+                <i class="fa-solid fa-star text-accent"></i> {{ place.rating }}
+              </div>
+
+              <!-- Distance Badge -->
+              <div v-if="userLocation" class="absolute top-4 left-20 bg-dark/60 backdrop-blur-md text-white px-3 py-2 rounded-2xl text-[10px] font-black border border-white/10 shadow-xl">
+                <i class="fa-solid fa-person-walking mr-1 text-primary"></i>
+                {{ calculateDistance(userLocation.lat, userLocation.lng, place.lat, place.lng).toFixed(1) }} km
+              </div>
+
+              <div class="absolute bottom-6 left-6 right-6 text-white pr-4 transform group-hover:translate-y-[-4px] transition-transform duration-500">
+                <h3 class="text-xl font-black tracking-tight leading-tight mb-1">{{ place.name }}</h3>
+                <div class="flex items-center text-white/80 text-[10px] font-bold tracking-wide uppercase">
+                  <i class="fa-solid fa-location-dot mr-1.5"></i> 
+                  <span class="truncate">{{ place.address?.split(',')[0] || '未知地點' }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="px-2 pb-2 flex-grow flex flex-col justify-between">
+              <div class="flex justify-between items-center gap-4">
+                <div class="text-gray-400 text-xs flex-1 min-w-0 font-medium" @click="$emit('select-place', place)">
+                  <span class="line-clamp-2 leading-relaxed">{{ place.address }}</span>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                  <button @click.stop="$emit('view-on-map', place)" class="w-12 h-12 rounded-2xl bg-primary/5 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 shadow-sm" title="在地圖上查看">
+                    <i class="fa-solid fa-map-location-dot text-lg"></i>
+                  </button>
+                  <button v-if="isInItinerary(place.id)" class="bg-secondary text-primary text-xs px-4 rounded-2xl font-black flex items-center gap-2 border border-primary/10">
+                    <i class="fa-solid fa-check"></i>已加入
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          
-          <div class="px-2 pb-2 flex-grow flex flex-col justify-between">
-            <div class="flex justify-between items-center gap-4">
-              <div class="text-gray-400 text-xs flex-1 min-w-0 font-medium" @click="$emit('select-place', place)">
-                <span class="line-clamp-2 leading-relaxed">{{ place.address }}</span>
-              </div>
-              <div class="flex gap-2 shrink-0">
-                <button @click.stop="$emit('view-on-map', place)" class="w-12 h-12 rounded-2xl bg-primary/5 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 shadow-sm" title="在地圖上查看">
-                  <i class="fa-solid fa-map-location-dot text-lg"></i>
-                </button>
-                <button v-if="isInItinerary(place.id)" class="bg-secondary text-primary text-xs px-4 rounded-2xl font-black flex items-center gap-2 border border-primary/10">
-                  <i class="fa-solid fa-check"></i>已加入
-                </button>
-              </div>
-            </div>
-          </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div v-if="hasNextPage" class="flex justify-center pt-4 pb-8">
+          <button 
+            @click="$emit('load-more')" 
+            class="px-12 py-4 bg-white border border-gray-100 text-dark font-black text-xs tracking-[0.2em] rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 active:scale-95 uppercase flex items-center gap-3"
+          >
+            <span>載入更多結果</span>
+            <i class="fa-solid fa-chevron-down animate-bounce"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -72,12 +117,54 @@
 </template>
 
 <script setup>
-defineProps({
+import { ref, computed } from 'vue'
+
+const props = defineProps({
   places: { type: Array, default: () => [] },
   isSearching: { type: Boolean, default: false },
-  isInItinerary: { type: Function, required: true }
+  isInItinerary: { type: Function, required: true },
+  userLocation: { type: Object, default: null },
+  hasNextPage: { type: Boolean, default: false }
 })
 
-defineEmits(['select-place', 'view-on-map'])
+defineEmits(['select-place', 'view-on-map', 'load-more'])
+
+const sortBy = ref('default')
+
+// Haversine formula to calculate distance between two points in km
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity
+  const R = 6371 // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1)
+  const dLon = deg2rad(lon2 - lon1)
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+const deg2rad = (deg) => deg * (Math.PI / 180)
+
+const sortedPlaces = computed(() => {
+  let result = [...props.places]
+  
+  if (sortBy.value === 'rating') {
+    result.sort((a, b) => {
+      const ratingA = a.rating === 'N/A' ? 0 : parseFloat(a.rating)
+      const ratingB = b.rating === 'N/A' ? 0 : parseFloat(b.rating)
+      return ratingB - ratingA
+    })
+  } else if (sortBy.value === 'distance' && props.userLocation) {
+    result.sort((a, b) => {
+      const distA = calculateDistance(props.userLocation.lat, props.userLocation.lng, a.lat, a.lng)
+      const distB = calculateDistance(props.userLocation.lat, props.userLocation.lng, b.lat, b.lng)
+      return distA - distB
+    })
+  }
+  
+  return result
+})
 </script>
 
