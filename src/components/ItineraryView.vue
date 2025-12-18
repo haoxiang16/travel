@@ -4,24 +4,24 @@
     <div class="blob w-64 h-64 bg-primary/10 rounded-full top-0 -left-20"></div>
     <div class="blob w-64 h-64 bg-accent/10 rounded-full bottom-0 -right-20" style="animation-delay: 2s"></div>
 
-    <div class="px-6 py-6 relative z-10">
-      <div class="flex justify-between items-end mb-6">
+    <div class="px-6 py-6 relative z-10 max-w-4xl mx-auto">
+      <div class="flex justify-between items-end mb-8">
         <div>
-          <h2 class="text-3xl font-serif font-bold text-dark tracking-tight">我的行程</h2>
-          <div class="flex items-center gap-3 mt-2 text-xs font-medium text-gray-500">
+          <h2 class="text-4xl font-serif font-black text-dark tracking-tighter">我的行程</h2>
+          <div class="flex items-center gap-3 mt-3 text-xs font-bold text-gray-400 uppercase tracking-widest">
             <span>{{ sortedItinerary.length }} 個項目</span>
-            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-            <span v-if="totalCost > 0" class="text-primary font-bold">預估 NT$ {{ totalCost.toLocaleString() }}</span>
-            <span v-else>未設定預算</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-primary/30"></span>
+            <span v-if="totalCost > 0" class="text-primary">預估 NT$ {{ totalCost.toLocaleString() }}</span>
+            <span v-else>規劃中</span>
           </div>
         </div>
-        <div class="flex gap-2">
-          <button v-if="itinerary.length > 0" @click="$emit('clear')" class="w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-400 flex items-center justify-center hover:text-red-500 hover:border-red-200 transition shadow-sm">
+        <div class="flex gap-3">
+          <button v-if="itinerary.length > 0" @click="$emit('clear')" class="w-11 h-11 rounded-2xl bg-white border border-gray-100 text-gray-400 flex items-center justify-center hover:text-red-500 hover:border-red-100 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300">
             <i class="fa-solid fa-trash-can text-sm"></i>
           </button>
-          <button @click="$emit('add')" class="bg-dark text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-dark/20 hover:bg-gray-800 transition flex items-center gap-2 active:scale-95">
-            <i class="fa-solid fa-plus"></i>
-            新增
+          <button @click="$emit('add')" class="h-11 bg-dark text-white px-6 rounded-2xl text-xs font-black tracking-widest shadow-xl shadow-dark/20 hover:bg-gray-800 transition-all duration-300 flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            新增項目
           </button>
         </div>
       </div>

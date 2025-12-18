@@ -2,7 +2,6 @@
   <div id="app" class="flex flex-col h-full relative">
     <!-- Header -->
     <AppHeader
-      :sync-status="syncStatus"
       v-model:search-query="searchQuery"
       :user="user"
       @search="searchPlaces"
@@ -43,7 +42,6 @@
           <SettingsView 
             v-if="currentView === 'settings'"
             :user="user"
-            :sync-status="syncStatus"
             :is-map-ready="isMapReady"
             @sign-out="handleSignOut"
             @show-login="showLoginModal = true"
@@ -98,7 +96,6 @@
             <SettingsView 
               v-show="currentView === 'settings'"
               :user="user"
-              :sync-status="syncStatus"
               :is-map-ready="isMapReady"
               @sign-out="handleSignOut"
               @show-login="showLoginModal = true"
@@ -207,7 +204,6 @@ const selectedPlace = ref(null)
 const itinerary = ref([])
 const dayTitles = ref({})
 const searchQuery = ref('')
-const syncStatus = ref('offline')
 const user = ref(null)
 const unsubscribeListener = ref(null)
 const showLoginModal = ref(false)
@@ -265,17 +261,14 @@ const initFirebase = async () => {
       user.value = firebaseUser
       if (firebaseUser) {
         console.log('✅ 使用者已登入:', firebaseUser.uid, firebaseUser.displayName || '匿名')
-        syncStatus.value = 'syncing'
         setupRealtimeListener()
       } else {
         console.log('ℹ️ 使用者未登入')
-        syncStatus.value = 'offline'
         showLoginModal.value = true
       }
     })
   } catch (error) {
     console.error('❌ Firebase 初始化失敗:', error)
-    syncStatus.value = 'offline'
     if (error.code === 'auth/configuration-not-found') {
       showToast('Firebase 認證未啟用，請檢查設定')
     }
@@ -285,7 +278,6 @@ const initFirebase = async () => {
 const handleGoogleLogin = async () => {
   try {
     showLoginModal.value = false
-    syncStatus.value = 'syncing'
     await signInWithGoogle()
     showToast('Google 登入成功')
     showUserMenu.value = false
@@ -298,14 +290,12 @@ const handleGoogleLogin = async () => {
     } else {
       showToast('Google 登入失敗，請重試')
     }
-    syncStatus.value = 'offline'
   }
 }
 
 const handleAnonymousLogin = async () => {
   try {
     showLoginModal.value = false
-    syncStatus.value = 'syncing'
     await signInAnonymous()
     showToast('訪客模式已啟用')
   } catch (error) {
@@ -315,7 +305,6 @@ const handleAnonymousLogin = async () => {
     } else {
       showToast('登入失敗，請重試')
     }
-    syncStatus.value = 'offline'
   }
 }
 
@@ -329,7 +318,6 @@ const handleSignOut = async () => {
     await signOut()
     user.value = null
     showUserMenu.value = false
-    syncStatus.value = 'offline'
     itinerary.value = []
     dayTitles.value = {}
     showToast('已登出')
@@ -347,19 +335,15 @@ const setupRealtimeListener = () => {
     if (data) {
       itinerary.value = data.itinerary
       dayTitles.value = data.dayTitles
-      syncStatus.value = 'synced'
-    } else {
-      syncStatus.value = 'synced'
     }
   }).catch(() => {
-    syncStatus.value = 'offline'
+    // Silently fail
   })
   
   unsubscribeListener.value = onItineraryDataChange(user.value.uid, (data) => {
     if (data) {
       itinerary.value = data.itinerary
       dayTitles.value = data.dayTitles
-      syncStatus.value = 'synced'
     }
   })
 }
@@ -368,12 +352,9 @@ const setupRealtimeListener = () => {
 const saveItinerary = async () => {
   if (user.value) {
     try {
-      syncStatus.value = 'syncing'
       await saveItineraryData(user.value.uid, itinerary.value, dayTitles.value)
-      syncStatus.value = 'synced'
     } catch (error) {
       console.error('❌ 同步到 Firebase 失敗:', error)
-      syncStatus.value = 'offline'
     }
   } else {
     console.warn('⚠️ 未登入，無法儲存資料')

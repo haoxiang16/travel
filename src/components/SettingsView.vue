@@ -18,12 +18,6 @@
           <div class="flex-1 min-w-0">
             <p class="font-bold text-dark text-lg truncate">{{ user.displayName || '匿名使用者' }}</p>
             <p class="text-xs text-gray-400 truncate">{{ user.email || '訪客模式' }}</p>
-            <div class="flex items-center gap-2 mt-1">
-              <div class="w-2 h-2 rounded-full" :class="syncStatus === 'synced' ? 'bg-green-500' : (syncStatus === 'syncing' ? 'bg-yellow-400 animate-pulse' : 'bg-gray-300')"></div>
-              <span class="text-[10px] text-gray-500">
-                {{ syncStatus === 'synced' ? '已同步' : (syncStatus === 'syncing' ? '同步中...' : '離線') }}
-              </span>
-            </div>
           </div>
         </div>
         
@@ -97,7 +91,6 @@
 <script setup>
 defineProps({
   user: { type: Object, default: null },
-  syncStatus: { type: String, default: 'offline' },
   isMapReady: { type: Boolean, default: false }
 })
 
