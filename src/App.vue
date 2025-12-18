@@ -242,7 +242,7 @@ const types = [
 // ==================== Lifecycle ====================
 onMounted(async () => {
   initFirebase()
-  if (apiKey.value) {
+  if (apiKey) {
     loadGoogleMapsScript()
   }
   

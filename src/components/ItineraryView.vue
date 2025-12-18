@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0 overflow-y-auto pb-32 bg-surface">
+  <div class="absolute inset-0 overflow-y-auto overflow-x-hidden pb-32 bg-surface">
     <!-- Background Decoration -->
     <div class="blob w-64 h-64 bg-primary/10 rounded-full top-0 -left-20"></div>
     <div class="blob w-64 h-64 bg-accent/10 rounded-full bottom-0 -right-20" style="animation-delay: 2s"></div>

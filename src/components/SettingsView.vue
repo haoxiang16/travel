@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0 bg-surface z-30 p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-surface z-30 p-6 overflow-y-auto overflow-x-hidden">
     <h2 class="text-3xl font-serif font-bold mb-8 text-dark">App 設定</h2>
     
     <!-- Account Section -->

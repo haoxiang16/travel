@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0 overflow-y-auto pb-32 bg-surface scroll-smooth">
+  <div class="absolute inset-0 overflow-y-auto overflow-x-hidden pb-32 bg-surface scroll-smooth">
     <div class="px-5 pt-4 max-w-4xl mx-auto">
       <!-- Empty State -->
       <div v-if="places.length === 0 && !isSearching" class="flex flex-col items-center justify-center py-32 text-center">
